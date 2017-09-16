@@ -1,34 +1,27 @@
 import os
+from ConfigParser import RawConfigParser # import configparser py3
 
 ROBOGALS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DEBUG = True
+config = RawConfigParser()
+config.read(ROBOGALS_DIR + '/settings.ini')
 
-# Logs users out within a day
-SESSION_COOKIE_AGE = 86400
-SESSION_SAVE_EVERY_REQUEST = True
+DEBUG = config.getboolean('debug', 'DEBUG')
 
-ADMINS = (
-	('myRobogals', 'my@robogals.org'),
-)
-MANAGERS = ADMINS
+SECRET_KEY = config.get('secrets', 'SECRET_KEY')
 
-ALLOWED_HOSTS = []
+API_SECRET = config.get('secrets', 'API_SECRET')
 
-#DATABASES = {
-#	'default': {
-#		'ENGINE': 'django.db.backends.mysql',
-#		'NAME': 'myrobogals',
-#		'USER': 'myrobogals',
-#		'PASSWORD': 'myrobogals'
-#	}
-#}
+ADMINS = tuple(config.items('admin'))
 
-# Uncomment this to use SQLite instead of MySQL
+MANAGERS = tuple(config.items('manager'))
+
+ALLOWED_HOSTS = list(config.get('allowed hosts', 'HOST1'))
+
 DATABASES = {
 	'default': {
-		'ENGINE': 'django.db.backends.sqlite3',
-		'NAME': ROBOGALS_DIR + '/myrobogals.db',
+		'ENGINE': config.get('database', 'DATABASE_ENGINE'),
+		'NAME': ROBOGALS_DIR + config.get('database', 'DATABASE_NAME'),
 	}
 }
 
@@ -52,16 +45,19 @@ SITE_ID = 1
 
 USE_I18N = True
 
-SECRET_KEY = 'kl;h45yrfgu;y;08op2534mj23kjjljk4ilk'
+# Logs users out within a day
+SESSION_COOKIE_AGE = 86400
+SESSION_SAVE_EVERY_REQUEST = True
+
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = ROBOGALS_DIR + '/rgmedia'
+MEDIA_ROOT = ROBOGALS_DIR + config.get('media', 'MEDIA_ROOT')
 
 # URL that handles the media in "rgmedia"
 # Put a trailing slash if there is a path component (optional in other cases).
 # The default '/rgmedia' will work when using the Django dev server and debug = True
-MEDIA_URL = '/rgmedia/'
+MEDIA_URL = config.get('media', 'MEDIA_URL')
 
 # Path and URL for where the static files are being served from
 # e.g. my.robogals.org/{STATIC_URL}/path-to-file
@@ -84,7 +80,6 @@ TEMPLATES = [
 			ROBOGALS_DIR + '/templates',
 			ROBOGALS_DIR + 'myrobogals/rgmain/templates',
 			ROBOGALS_DIR + 'myrobogals/rgteaching/templates',
-			ROBOGALS_DIR + 'myrobogals/rgprofile/templates',
 			ROBOGALS_DIR + '/rgtemplates'
 		],
 		'APP_DIRS': True,
@@ -96,6 +91,7 @@ TEMPLATES = [
 				'django.template.context_processors.media',
 				'django.template.context_processors.static',
 				'django.template.context_processors.tz',
+				'django.template.context_processors.request',
 				'django.contrib.messages.context_processors.messages'
 			],
 		},
@@ -163,13 +159,12 @@ INSTALLED_APPS = (
 	'myrobogals.rgforums',
 	'myrobogals.rgconf',
 	'myrobogals.rgreport',
+	'myrobogals.rgwiki',
 	'tinymce',
 	'widget_tweaks',
 )
 
 AUTH_USER_MODEL = 'rgprofile.User'
-
-API_SECRET = 'k290gj2apoz0'
 
 GENDERS = (
 	(0, '---'),
@@ -190,7 +185,6 @@ PROFILE_IMAGE_MAX_SIZE = 512
 
 # The default profile image for users who haven't uploaded one yet
 PROFILE_IMAGE_DEFAULT = 'profilepics/default.png'
-
 
 # Used to debug emails without STMP servers set up on local machine
 if DEBUG:

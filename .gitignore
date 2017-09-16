@@ -1,4 +1,3 @@
-myrobogals/settings.py
 daemons/smsglobal.h
 daemons/rgsmsd.h
 daemons/rgsmsd
@@ -15,3 +14,4 @@ myrobogals.db
 .idea/
 .vscode/
 tmp/
+settings.ini
