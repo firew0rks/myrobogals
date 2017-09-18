@@ -16,12 +16,12 @@ ADMINS = tuple(config.items('admin'))
 
 MANAGERS = tuple(config.items('manager'))
 
-ALLOWED_HOSTS = list(config.get('allowed hosts', 'HOST1'))
+ALLOWED_HOSTS = list(tuple(config.get('debug', 'INTERNAL_IPS').split()))
 
 DATABASES = {
 	'default': {
 		'ENGINE': config.get('database', 'DATABASE_ENGINE'),
-		'NAME': ROBOGALS_DIR + config.get('database', 'DATABASE_NAME'),
+		'NAME': ROBOGALS_DIR + '/' + config.get('database', 'DATABASE_NAME'),
 	}
 }
 
@@ -66,8 +66,9 @@ STATIC_URL = '/static/'
 # Location to all of the individual apps that have static files
 STATICFILES_DIRS = [
 	os.path.join(ROBOGALS_DIR, "static"),
-	os.path.join(ROBOGALS_DIR, "rgprofile/static"),
-	os.path.join(ROBOGALS_DIR, "rgmain/static"),
+	os.path.join(ROBOGALS_DIR, "myrobogals/rgprofile/static"),
+	os.path.join(ROBOGALS_DIR, "myrobogals/rgmain/static"),
+	os.path.join(ROBOGALS_DIR, "myrobogals/rgwiki/static"),
 ]
 
 # Where collectstatic will store all the static files when 'python manage.py collectstatic' is ran
@@ -80,6 +81,7 @@ TEMPLATES = [
 			ROBOGALS_DIR + '/templates',
 			ROBOGALS_DIR + 'myrobogals/rgmain/templates',
 			ROBOGALS_DIR + 'myrobogals/rgteaching/templates',
+			ROBOGALS_DIR + 'myrobogals/rgwiki/templates',
 			ROBOGALS_DIR + '/rgtemplates'
 		],
 		'APP_DIRS': True,
@@ -162,6 +164,7 @@ INSTALLED_APPS = (
 	'myrobogals.rgwiki',
 	'tinymce',
 	'widget_tweaks',
+	'markdownx',
 )
 
 AUTH_USER_MODEL = 'rgprofile.User'

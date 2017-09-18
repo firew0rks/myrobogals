@@ -35,7 +35,7 @@ def teachhome(request):
             return HttpResponseRedirect(reverse('teaching:viewvisit', kwargs={'visit_id': e['event_id']}))
         else:
             print(e['event_form'])
-            return render(request, 'new_visit-v2.html', {'event_form': e['event_form'], 'event_form_extra': e['event_form_extra']})
+            return render(request, 'new_visit-v2.html', {'event_form': e['event_form']})
 
     else:
         setattr(chapter, 'sum', 0)
@@ -46,17 +46,27 @@ def teachhome(request):
         context_instance['chapter'] = chapter
 
         # Small list of upcoming workshops
-        upcoming_events = SchoolVisit.objects.filter(chapter=chapter, status=0)[:5]
-        context_instance['upcoming_events'] = upcoming_events
+        upcoming_events = SchoolVisit.objects.filter(chapter=chapter, status=0).order_by('visit_start')
+        context_instance['upcoming_events'] = upcoming_events[:5]
+
+        for e in upcoming_events:
+            setattr(e, 'attending', EventAttendee.objects.filter(event=e, rsvp_status=2).count())
+
+        print(upcoming_events)
+
+        past_events = upcoming_events.filter(visit_end__gt=datetime.datetime.now(tz=chapter.tz_obj()))
+        context_instance['past_events'] = past_events
 
         # Small list of Recently finished workshops
-        past_events = SchoolVisit.objects.filter(chapter=chapter, status=1)[:5]
-        context_instance['past_events'] = past_events
+        closed_events = SchoolVisit.objects.filter(chapter=chapter, status=1).order_by('visit_start')[:5]
+        context_instance['closed_events'] = closed_events
+
+        for e in closed_events:
+            setattr(e, 'attended', EventAttendee.objects.filter(event=e, actual_status=2).count())
 
         # New events form for modal
         e = new_event(request)
         context_instance['event_form'] = e['event_form']
-        context_instance['event_form_extra'] = e['event_form_extra']
 
     return render(request, 'teaching_home-v2.html', context_instance)
 
@@ -75,9 +85,7 @@ def new_event(request):
         else:
             event_form = NewEventForm(request.POST, chapter=chapter)
 
-        event_form_extra = NewEventFormAdditionFields(request.POST)
-
-        if event_form.is_valid() and event_form_extra.is_valid():
+        if event_form.is_valid():
             form = event_form.cleaned_data
             v = SchoolVisit()
 
@@ -111,9 +119,7 @@ def new_event(request):
         else:
             event_form = NewEventForm(chapter=chapter)
 
-        event_form_extra = NewEventFormAdditionFields()
-
-    return {'event_form': event_form, 'event_form_extra': event_form_extra}
+    return {'event_form': event_form}
 
 
 # View workshop details. This page also allows volunteers to RSVP.
@@ -146,13 +152,16 @@ def viewvisit(request, visit_id):
 
             messages.success(request, 'Event Information Successfully Updated')
             return HttpResponseRedirect(reverse('teaching:viewvisit', kwargs={'visit_id': v.id}))
+        else:
+            messages.error(request, 'The edit form was incorrectly filled out')
     else:
-        start_date = datetime.datetime.strftime(v.visit_start, '%m/%d/%Y')
-        start_time = datetime.datetime.strftime(v.visit_start, '%I:%M %p')
-        end_time = datetime.datetime.strftime(v.visit_end, '%I:%M %p')
+
+        start_date = datetime.datetime.strftime(datetime.datetime.astimezone(v.visit_start, tz=chapter.tz_obj()), '%m/%d/%Y')
+        start_time = datetime.datetime.strftime(datetime.datetime.astimezone(v.visit_start, tz=chapter.tz_obj()), '%I:%M %p')
+        end_time = datetime.datetime.strftime(datetime.datetime.astimezone(v.visit_end, tz=chapter.tz_obj()), '%I:%M %p')
 
         event_form = NewEventForm({
-            'event': v.school,
+            'event': v.school.id,
             'location': v.location,
             'date': start_date,
             'start_time': start_time,
@@ -161,7 +170,7 @@ def viewvisit(request, visit_id):
             'notes': v.notes
         }, chapter=chapter_filter)
 
-        # print(event_form)
+        print(event_form)
         # setattr(event_form, 'event_name', v.school)
 
     attended = EventAttendee.objects.filter(event=v, actual_status=1)
@@ -180,12 +189,31 @@ def viewvisit(request, visit_id):
         user_attended = (ea.actual_status == 1)
     except IndexError:
         user_rsvp_status = 0
+
+    print(event_form)
     return render_to_response('visit_view-v2.html',
                               {'chapter': chapter, 'v': v, 'stats': stats, 'attended': attended, 'attending': attending,
                                'notattending': notattending, 'waitingreply': waitingreply,
                                'user_rsvp_status': user_rsvp_status, 'user_attended': user_attended,
                                'eventmessages': eventmessages, 'event_form': event_form,
                                'id': v.id}, context_instance=RequestContext(request))
+
+
+@login_required
+def visitcomment(request, event_id):
+    if request.method == 'POST':
+        rsvpform = RSVPForm(request.POST)
+        if rsvpform.is_valid():
+            data = rsvpform.cleaned_data
+            if data['message']:
+                rsvpmessage = EventMessage()
+                rsvpmessage.event = event_id
+                rsvpmessage.user = request.user
+                rsvpmessage.date = now()
+                rsvpmessage.message = data['message']
+                rsvpmessage.save()
+
+            return HttpResponseRedirect(reverse('teaching:viewvisit'), kwargs={'event_id': event_id})
 
 
 @login_required
@@ -588,67 +616,67 @@ def cancelvisit(request, visit_id):
 
 
 @login_required
-def dorsvp(request, event_id, user_id, rsvp_status):
-    event = get_object_or_404(Event, pk=event_id)
-    user = get_object_or_404(User, pk=user_id)
-    if event.status != 0:
-        raise Http404
-    if request.user.is_staff:
-        EventAttendee.objects.filter(user=user, event=event).delete()
-        ea = EventAttendee(user=user, event=event, rsvp_status=rsvp_status)
-        ea.save()
-    elif event.chapter == user.chapter and user == request.user:
-        if event.allow_rsvp == 0:  # Allow anyone to RSVP
-            EventAttendee.objects.filter(user=user, event=event).delete()
-            ea = EventAttendee(user=user, event=event, rsvp_status=rsvp_status)
-            ea.save()
-        elif event.allow_rsvp == 1:  # Only allow invitees to RSVP
-            if EventAttendee.objects.filter(user=user, event=event).count() > 0:
-                EventAttendee.objects.filter(user=user, event=event).delete()
-                ea = EventAttendee(user=user, event=event, rsvp_status=rsvp_status)
-                ea.save()
-    return HttpResponseRedirect('/teaching/' + str(event.pk) + '/')
-
-
-# RSVP to a workshop, with the option to leave a message
-@login_required
-def rsvp(request, event_id, user_id, rsvp_type):
+def dorsvp(request, event_id, user_id, rsvp_type):
     e = get_object_or_404(Event, pk=event_id)
     chapter = request.user.chapter
     if rsvp_type == 'yes':
         rsvp_id = 2
         rsvp_string = _("RSVP'd as attending")
-        title_string = _("RSVP as attending")
     elif rsvp_type == 'no':
         rsvp_id = 4
         rsvp_string = _("RSVP'd as not attending")
-        title_string = _("RSVP as not attending")
     elif rsvp_type == 'remove':
-        title_string = _("Remove an invitee")
         rsvp_string = _("Removed from this event")
         rsvp_id = 0
     else:
         raise Http404
     if e.chapter != chapter and not request.user.is_superuser:
         raise Http404
-    if request.method == 'POST':
-        rsvpform = RSVPForm(request.POST, user=request.user, event=e)
-        if rsvpform.is_valid():
-            data = rsvpform.cleaned_data
-            if data['leave_message'] == True:
-                rsvpmessage = EventMessage()
-                rsvpmessage.event = e
-                rsvpmessage.user = request.user
-                rsvpmessage.date = now()
-                rsvpmessage.message = data['message']
-                rsvpmessage.save()
-            messages.success(request, message=unicode(rsvp_string))
-            return dorsvp(request, event_id, user_id, rsvp_id)
-    else:
-        rsvpform = RSVPForm(None, user=request.user, event=e)
-    return render_to_response('event_rsvp.html',
-                              {'rsvpform': rsvpform, 'title_string': title_string, 'event_id': event_id,
-                               'user_id': user_id, 'rsvp_type': rsvp_type}, context_instance=RequestContext(request))
+
+    event = get_object_or_404(Event, pk=event_id)
+    user = get_object_or_404(User, pk=user_id)
+    if event.status != 0:
+        raise Http404
+    if request.user.is_staff:
+        EventAttendee.objects.filter(user=user, event=event).delete()
+        ea = EventAttendee(user=user, event=event, rsvp_status=rsvp_id)
+        ea.save()
+    elif event.chapter == user.chapter and user == request.user:
+        if event.allow_rsvp == 0:  # Allow anyone to RSVP
+            EventAttendee.objects.filter(user=user, event=event).delete()
+            ea = EventAttendee(user=user, event=event, rsvp_status=rsvp_id)
+            ea.save()
+        elif event.allow_rsvp == 1:  # Only allow invitees to RSVP
+            if EventAttendee.objects.filter(user=user, event=event).count() > 0:
+                EventAttendee.objects.filter(user=user, event=event).delete()
+                ea = EventAttendee(user=user, event=event, rsvp_status=rsvp_id)
+                ea.save()
+    messages.success(request, rsvp_string)
+    return HttpResponseRedirect('/teaching/' + str(event.pk) + '/')
+
+# TODO: Deprecate this method and the template
+# RSVP to a workshop, with the option to leave a message
+# @login_required
+# def rsvp(request, event_id, user_id, rsvp_type):
+#
+#     if request.method == 'POST':
+#         rsvpform = RSVPForm(request.POST, user=request.user, event=e)
+#         if rsvpform.is_valid():
+#             data = rsvpform.cleaned_data
+#             if data['leave_message'] == True:
+#                 rsvpmessage = EventMessage()
+#                 rsvpmessage.event = e
+#                 rsvpmessage.user = request.user
+#                 rsvpmessage.date = now()
+#                 rsvpmessage.message = data['message']
+#                 rsvpmessage.save()
+#             messages.success(request, message=unicode(rsvp_string))
+#             return dorsvp(request, event_id, user_id, rsvp_id)
+#     else:
+#         rsvpform = RSVPForm(None, user=request.user, event=e)
+#     return render_to_response('event_rsvp.html',
+#                               {'rsvpform': rsvpform, 'title_string': title_string, 'event_id': event_id,
+#                                'user_id': user_id, 'rsvp_type': rsvp_type}, context_instance=RequestContext(request))
 
 
 # Delete an RSVP message from the workshop
@@ -686,7 +714,7 @@ def stats(request, visit_id):
         # Page 1: show stats form
         request.session['hoursPerPersonStage'] = 1
         form = SchoolVisitStatsForm(None, visit=v)
-        return render_to_response('visit_stats.html', {'form': form, 'visit_id': visit_id},
+        return render_to_response('close_event-v2.html', {'form': form, 'visit_id': visit_id},
                                   context_instance=RequestContext(request))
     if request.method == 'POST' and request.session['hoursPerPersonStage'] == 1:
         # Post from page 1: save entered stats into database
@@ -750,7 +778,7 @@ def stats(request, visit_id):
     else:
         request.session['hoursPerPersonStage'] = 1
         form = SchoolVisitStatsForm(None, visit=v)
-        return render_to_response('visit_stats.html', {'form': form, 'visit_id': visit_id},
+        return render_to_response('close_event-v2.html', {'form': form, 'visit_id': visit_id},
                                   context_instance=RequestContext(request))
 
 

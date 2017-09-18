@@ -1,0 +1,51 @@
+{% extends "base-v2.html" %}
+{% load i18n %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block title %}Close Event{% endblock %}
+
+{% block pagetitle %} Close {{ visit_id }}{% endblock %}
+
+{% block content %}
+  <div class="tile">
+    <h2 class="rg-page-header">
+      Enter Stats
+    </h2>
+    <form action="{% url 'teaching:stats' visit_id %}" method="POST"> {% csrf_token %}
+      <div class="form-group row">
+        <label class="form-control-label col-2">Visit Type</label>
+        <div class="col-10">
+          {{ form.visit_type|add_class:"custom-select"|attr:"style:font-weight:bold;" }}
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="form-control-label col-2">Number of Girls</label>
+        <div class="col-2">
+          {{ form.other_girls_first|add_class:"form-control" }}
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="form-control-label col-2">Number of Boys</label>
+        <div class="col-2">
+          {{ form.other_boys_first|add_class:"form-control" }}
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="form-control-label col-2">Attendees</label>
+        <div class="col-5">
+          {{ form.attended }}
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Save & Close</button>
+    </form>
+  </div>
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}

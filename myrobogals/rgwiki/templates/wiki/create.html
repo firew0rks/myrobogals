@@ -1,0 +1,37 @@
+{% extends "base-v2.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block header %}
+    <link href="{% static 'rgwiki/css/help.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'rgwiki/css/create.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block title %} Create Wiki Article {% endblock %}
+
+{% block content %}
+    <div id="alert-bar" class="alert alert-success alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <strong>Saved!</strong> Now continue writing your masterpiece.
+    </div>
+
+    <form class="form-horizontal" method="POST" action="" id="create-form"> {% csrf_token %}
+        {% include "includes/heading.html" %}
+
+        <p>{{ form.article }}</p>
+
+        <div class="bottom">
+            <input class="btn btn-primary" type="submit" value="Save" id="save-form"/>
+            <button id="save-cont-btn" type="button" class="btn btn-primary">Save & Continue</button>
+        </div>
+
+    </form>
+
+    {{ form.media }}
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript" src="{% static "rgwiki/js/autofillSlug.js" %}"></script>
+    <script type="text/javascript" src="{% static "rgwiki/js/tagBoxes.js" %}"></script>
+    <script type="text/javascript" src="{% static "rgwiki/js/saveAndContinue.js" %}"></script>
+{% endblock %}

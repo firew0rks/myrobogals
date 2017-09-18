@@ -3,3 +3,4 @@ mysql-python
 pytz
 django-tinymce
 django-widget-tweaks
+django-markdownx

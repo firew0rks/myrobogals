@@ -14,8 +14,7 @@
       Basic Information
     </h2>
 
-    <form>
-
+    <form action="{% url 'teaching:home' %}" method="post"> {% csrf_token %}
       <div class="form-group row" style="justify-content: flex-end; margin-right: 0;">
         {{ form2.visit_type|add_class:"custom-select"|attr:"style:font-weight:bold;" }}
       </div>
@@ -23,43 +22,109 @@
       <div class="form-group row">
         <label for="recipient-name" class="form-control-label col-2">Event</label>
         <div class="col-10">
-          <input placeholder="Enter the school or event's name" type="text" class="form-control" id="recipient-name">
+          {% if not event_form.event.errors %}
+            {{ event_form.event|add_class:"form-control typeahead"|attr:"placeholder:Enter the school or event's name"|attr:"autocomplete:off" }}
+          {% else %}
+            {{ event_form.event|add_class:"form-control is-invalid"|attr:"placeholder:Enter the school or event's name data-provide:typeahead" }}
+            <div class="invalid-feedback">
+              {% for error in event_form.event.errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
       </div>
+
       <div class="form-group row">
         <label for="recipient-name" class="form-control-label col-2">Location</label>
         <div class="col-10">
-          <input placeholder="The location where the event is being held" type="text" class="form-control" id="recipient-name">
+          {% if not event_form.location.errors %}
+            {{ event_form.location|add_class:"form-control"|attr:"The location where the event is being held" }}
+          {% else %}
+            {{ event_form.location|add_class:"form-control is-invalid"|attr:"The location where the event is being held" }}
+            <div class="invalid-feedback">
+              {% for error in event_form.location.errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
       </div>
+
       <div class="form-group row">
         <label for="recipient-name" class="form-control-label col-2">Date</label>
-        <div class="input-group date col-5" data-provide="datepicker">
-          <input type="text" class="form-control" value="12-02-2012">
-          <div class="input-group-addon">
-            <i class="fa fa-calendar" aria-hidden="true"></i>
+        {% if not event_form.date.errors %}
+          <div class="input-group date col-5" data-provide="datepicker">
+            {{ event_form.date|add_class:"form-control" }}
+            <div class="input-group-addon">
+              <i class="fa fa-calendar" aria-hidden="true"></i>
+            </div>
           </div>
-        </div>
-        <div class="col-5">
-        </div>
+        {% else %}
+          <div class="input-group date col-5" data-provide="datepicker">
+            {{ event_form.date|add_class:"form-control is-invalid" }}
+            <div class="input-group-addon">
+              <i class="fa fa-calendar" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="invalid-feedback" style="display: block;">
+            {% for error in event_form.date.errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
 
       <div class="form-group row">
         <label for="recipient-name" class="form-control-label col-2">Time</label>
         <div class="input-group bootstrap-timepicker timepicker col-5">
-          <input id="timepicker1" type="text" class="form-control input-small">
-          <span class="input-group-addon"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
+          {% if not event_form.start_time.errors %}
+            {{ event_form.start_time|add_class:"form-control input-small"|attr:"id:timepicker1" }}
+            <span class="input-group-addon"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
+          {% else %}
+            {{ event_form.start_time|add_class:"form-control input-small is-invalid"|attr:"id:timepicker1" }}
+            <span class="input-group-addon"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
+            <div class="invalid-feedback">
+              {% for error in event_form.start_time.errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
         <div class="input-group bootstrap-timepicker timepicker col-5">
-          <input id="timepicker2" type="text" class="form-control input-small">
-          <span class="input-group-addon"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
+          {% if not event_form.end_time.errors %}
+            {{ event_form.end_time|add_class:"form-control input-small"|attr:"id:timepicker2" }}
+            <span class="input-group-addon"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
+          {% else %}
+            {{ event_form.end_time|add_class:"form-control input-small is-invalid"|attr:"id:timepicker2" }}
+            <span class="input-group-addon"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
+            <div class="invalid-feedback">
+              {% for error in event_form.end_time.errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
       </div>
 
       <div class="form-group row">
-        <label for="message-text" class="form-control-label col-2">Description:</label>
+        <label for="message-text" class="form-control-label col-2">Year Level:</label>
         <div class="col-10">
-          {{ form2.notes|add_class:"form-control"|attr:"id:message-text" }}
+          {{ event_form.yearlvl|add_class:"form-control" }}
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label for="message-text" class="form-control-label col-2">Number of Girls</label>
+        <div class="col-2">
+          {{ event_form.yearlvl|add_class:"form-control" }}
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label for="message-text" class="form-control-label col-2">Number of Boys</label>
+        <div class="col-2">
+          {{ event_form.yearlvl|add_class:"form-control" }}
         </div>
       </div>
 
@@ -86,55 +151,8 @@
         </div>
       </div>
 
-      <div class="form-group row">
-        <label class="col-2">Enter Stats:</label>
-        <div class="col-10">
-          <table class="table table-hover">
-            <thead class="rg-thead-inverse">
-            <tr>
-              <th></th>
-              <th colspan="2">Girls</th>
-              <th colspan="2">Boys</th>
-            </tr>
-            </thead>
-            <thead>
-            <tr>
-              <th></th>
-              <th>First</th>
-              <th>Repeat</th>
-              <th>First</th>
-              <th>Repeat</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-              <th scope="row">Primary School</th>
-              <td>{{ form2.primary_girls_first }}</td>
-              <td>{{ form2.primary_girls_repeat }}</td>
-              <td>{{ form2.primary_boys_first }}</td>
-              <td>{{ form2.primary_boys_repeat }}</td>
-            </tr>
-            <tr>
-              <th scope="row">High School</th>
-              <td>{{ form2.high_girls_first }}</td>
-              <td>{{ form2.high_girls_repeat }}</td>
-              <td>{{ form2.high_boys_first }}</td>
-              <td>{{ form2.high_boys_repeat }}</td>
-            </tr>
-            <tr>
-              <th scope="row">Other</th>
-              <td>{{ form2.other_girls_first }}</td>
-              <td>{{ form2.other_girls_repeat }}</td>
-              <td>{{ form2.other_boys_first }}</td>
-              <td>{{ form2.other_boys_repeat }}</td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <button type="submit" class="btn btn-primary">Save Stats</button>
 
-
-      <button type="button" class="btn btn-primary">Save Stats</button>
     </form>
   </div>
 

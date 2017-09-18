@@ -1,0 +1,25 @@
+.table-of-contents {
+    margin-left: 20px;
+}
+
+.panel {
+    display: inline-block;
+    float: right;
+}
+
+.panel-body {
+    padding: 3px 5px;
+}
+
+/*.toc>.list-group>.list-group-item {*/
+    /*border: 1px solid rgb(221, 221, 221);*/
+/*}*/
+
+.list-group > .list-group-item {
+    border: 0;
+    padding: 3px 5px;
+}
+
+.list-group {
+    margin-bottom: 0;
+}

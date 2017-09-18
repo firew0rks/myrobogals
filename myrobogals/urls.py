@@ -88,7 +88,8 @@ urlpatterns = [
 	url(r'^changelogs/$', rgmain_views.changelogs),
 
 	# Wiki
-	url(r'^wiki/$', rgmain_views.wiki),
+	url(r'^wiki/', include('myrobogals.rgwiki.urls', namespace='wiki')),
+	url(r'^markdownx/', include('markdownx.urls')),
 
 	# Static pages
 	url(r'^credits/$', rgmain_views.credits),

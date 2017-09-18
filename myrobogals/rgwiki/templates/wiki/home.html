@@ -1,0 +1,25 @@
+{% extends "base-v2.html" %}
+
+{% block pagetitle %} Brain of Robogals {% endblock %}
+
+{% block content %}
+  <div class="row">
+  <div class="col-2"></div>
+    <div class="tile col-8">
+        <h2 class="rg-page-header">
+          Search for a thought
+        </h2>
+        <form action="/wiki/search/" method="GET">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search for... (tags)" name="search">
+
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
+
+                </span>
+            </div>
+        </form>
+    </div>
+    <div class="col-2"></div>
+  </div>
+{% endblock %}

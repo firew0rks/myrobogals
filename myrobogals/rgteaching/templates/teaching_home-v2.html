@@ -40,11 +40,11 @@
     <table class="table table-striped">
       <thead class="rg-thead-inverse">
       <tr>
-        <th>Event</th>
-        <th>Date</th>
-        <th>Time</th>
-        <th style="text-align: center;">Attending</th>
-        <th style="text-align: center;">Privacy</th>
+        <th>EVENT</th>
+        <th>DATE</th>
+        <th>TIME</th>
+        <th style="text-align: center;">ATTENDING</th>
+        <th style="text-align: center;">PRIVACY</th>
       </tr>
       </thead>
 
@@ -54,8 +54,8 @@
           <th scope="row"><a href="{% url 'teaching:viewvisit' e.id %}">{{ e.school }}</a></th>
           <td>{{ e.visit_start|date:_("DATE_FORMAT") }}</td>
           <td>{{ e.visit_start|date:_("TIME_FORMAT") }} to {{ e.visit_end|date:_("TIME_FORMAT") }}</td>
-          <td style="text-align: center;">10</td>
-          <td style="text-align: center;">Private</td>
+          <td style="text-align: center;">{{ e.attending }}</td>
+          <td style="text-align: center;">{% if e.privacy == 0 %}Private{% else %}Public{% endif %}</td>
         </tr>
       {% endfor %}
       </tbody>
@@ -74,22 +74,30 @@
     <table class="table table-striped">
       <thead class="rg-thead-inverse">
       <tr>
-        <th>Event</th>
-        <th>Date</th>
-        <th style="text-align: center;">Attended</th>
-        <th style="text-align: center;">Stats</th>
-        <th style="text-align: center;">Action</th>
+        <th>EVENT</th>
+        <th>DATE FINISHED</th>
+        <th style="text-align: center;">ATTENDED</th>
+        <th style="text-align: center;">STUDENTS</th>
+        <th style="text-align: center;">STATUS</th>
       </tr>
       </thead>
 
       <tbody>
-      {% for e in upcoming_events %}
+      {% for e in past_events %}
         <tr>
-          <th scope="row">{{ e.school }}</th>
-          <td>{{ e.visit_end }}</td>
-          <td style="text-align: center;">8</td>
-          <td style="text-align: center;">22</td>
-          <td style="text-align: center;"><a href="#">View</a></td>
+          <th scope="row"><a href="{% url 'teaching:viewvisit' e.id %}">{{ e.school }}</a></th>
+          <td>{{ e.visit_start|date:_("DATE_FORMAT") }} - {{ e.visit_end|date:_("TIME_FORMAT") }}</td>
+          <td style="text-align: center;">{{ e.attended }}</td>
+          <td colspan="2" style="text-align: center;"><a href="{% url 'teaching:stats' e.id %}">Close Workshop</a></td>
+        </tr>
+      {% endfor %}
+      {% for e in closed_events %}
+        <tr>
+          <th scope="row"><a href="{% url 'teaching:viewvisit' e.id %}">{{ e.school }}</a></th>
+          <td>{{ e.visit_start|date:_("DATE_FORMAT") }} - {{ e.visit_end|date:_("TIME_FORMAT") }}</td>
+          <td style="text-align: center;">{{ e.attended }}</td>
+          <td style="text-align: center;">{{ e.numstudents }}</td>
+          <td style="text-align: center;">Close</td>
         </tr>
       {% endfor %}
       </tbody>
