@@ -72,6 +72,10 @@ class NewEventFormAdditionFields(forms.Form):
                               widget=forms.Textarea(attrs={'cols': '35', 'rows': '7'}))
 
 
+class RSVPForm(forms.Form):
+    message = forms.CharField(label=_("Comment"), widget=forms.Textarea)
+
+
 # Base class for SchoolVisitForm
 class SchoolVisitFormOneBase(forms.Form):
     school = forms.ModelChoiceField(queryset=School.objects.none(), help_text=_(
@@ -330,18 +334,6 @@ class SchoolFormPartTwo(forms.Form):
 
 class SchoolFormPartThree(forms.Form):
     notes = forms.CharField(label=_("Notes"), required=False, widget=forms.Textarea(attrs={'cols': '35', 'rows': '7'}))
-
-
-class RSVPForm(forms.Form):
-    leave_message = forms.BooleanField(required=False)
-    message = forms.CharField(widget=TinyMCE(attrs={'cols': 60}), required=False)
-
-    def __init__(self, *args, **kwargs):
-        user = kwargs['user']
-        del kwargs['user']
-        visit = kwargs['event']
-        del kwargs['event']
-        super(RSVPForm, self).__init__(*args, **kwargs)
 
 
 class StatsModelMultipleChoiceField(forms.ModelMultipleChoiceField):

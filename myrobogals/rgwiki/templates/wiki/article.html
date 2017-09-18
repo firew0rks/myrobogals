@@ -1,0 +1,53 @@
+{% extends "base-v2.html" %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block header %}
+    <link href="{% static 'wiki/css/article.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+    <div>
+        <div style="text-align: left;">
+            <img src="/media/upload/dp.jpg" width="20px" height="20px">
+            <img src="/media/upload/dp.jpg" width="20px" height="20px">
+            <img src="/media/upload/dp.jpg" width="20px" height="20px">
+            <img src="/media/upload/dp.jpg" width="20px" height="20px">
+            <br>
+            <a href="#" style="font-size: 12px;" > See all Contributors </a>
+
+            <div>
+                <form action="edit/" method="GET">
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-pencil" aria-hidden="true"></i> Edit Article</button>
+                </form>
+
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-cog" aria-hidden="true"></i> <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#"><i class="fa fa-clock-o" aria-hidden="true"></i> Changelogs</a></li>
+                        <li><a href="pdf/"><i class="fa fa-print" aria-hidden="true"></i> Print to PDF</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default table-of-contents" >
+    <div class="panel-heading">Table of Contents</div>
+    <div class="panel-body">
+        {{ toc|safe }}
+    </div>
+        </div>
+    {{ text|safe }}
+
+    Last edited by: XXX
+    Last modified: XXX
+    Version: X.XX
+{% endblock %}

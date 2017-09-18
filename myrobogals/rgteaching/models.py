@@ -124,8 +124,8 @@ class Event(models.Model):
     )
 
     PRIVACY_CHOICES = (
-        (0, 'Private'),
-        (1, 'Public')
+        (0, 'Private Event'),
+        (1, 'Public Event')
     )
 
     chapter = models.ForeignKey(Chapter)

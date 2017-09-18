@@ -1,0 +1,10 @@
+{% extends "base-v2.html" %}
+
+{% block title %} Search Results {% endblock %}
+
+{% block content %}
+    {% for a in article_list %}
+        <h2><a href="/wiki/article/{{ a.url }}" >{{ a.title }}</a></h2>
+        <p>{{ a.preview_text|safe }}</p>
+    {% endfor %}
+{% endblock %}

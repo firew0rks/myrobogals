@@ -1,0 +1,33 @@
+{% extends "base-v2.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block header %}
+    <link href="{% static 'wiki/css/create.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block title %} Upload Article {% endblock %}
+
+{% block content %}
+    <p>
+    This page is to allow you to upload Markdown documents
+    </p>
+
+    <form id="create-form" method="post" action="" class="form-horizontal" enctype="multipart/form-data"> {% csrf_token %}
+        {% include "includes/heading.html" %}
+
+        <div class="form-group">
+            <label class="col-sm-1 control-label">{{ form.file.label }}:</label>
+            <div class="col-sm-11">
+                {{ form.file|add_class:"btn-file" }}
+            </div>
+        </div>
+
+        <input class="btn btn-primary" type="submit" value="Upload" id="save-form"/>
+    </form>
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript" src="{% static "wiki/js/autofillSlug.js" %}"></script>
+    <script type="text/javascript" src="{% static "wiki/js/tagBoxes.js" %}"></script>
+{% endblock %}

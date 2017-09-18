@@ -1,0 +1,24 @@
+{% load static %}
+
+<form method="post" action="{% url 'teaching:visit_comment' id %}"> {% csrf_token %}
+  <div class="row">
+    <div class="col-2" style="display: flex; align-items: center; justify-content: center">
+      <img style="border-radius: 360px; height: 3rem;" src="{% static "myrobogals/img/profile_picture.png" %}"/>
+    </div>
+    <div class="col-10">
+      <strong style="color: #5876D0; padding-left: 15px">{{ request.user.first_name }} {{ request.user.last_name }}</strong>
+      <br/>
+      <div class="form-group">
+        <div class="col-10">
+          <textarea class="form-control" id="id_comment" cols="30" name="comment" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-2"></div>
+    <div class="col-10">
+      <button type="submit" class="btn btn-primary" style="margin-left: 15px">Save</button>
+    </div>
+  </div>
+</form>
