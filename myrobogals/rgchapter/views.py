@@ -40,7 +40,7 @@ def list(request):
 						chapters_display.append(chapter)
 				listing.append({'super': superchapter, 'chapters': chapters_display})
 		specialch = Chapter.objects.filter(parent__myrobogals_url='special', status=0).order_by('short','name')
-	return render_to_response('chapter_page.html', {'listing': listing, 'specialch': specialch}, context_instance=RequestContext(request))
+	return render_to_response('chapter_page-v2.html', {'listing': listing, 'specialch': specialch}, context_instance=RequestContext(request))
 
 def joinlist(request):
 	listing = []
