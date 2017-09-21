@@ -5,7 +5,7 @@ from myrobogals.rgprofile.views import profile_chapter, profile_user
 from myrobogals.rgweb import views as rgweb_views
 
 urlpatterns = [
-    url(r'^/$', rgchapter_views.list),
+    url(r'^$', rgchapter_views.list),
     url(r'^awards/$', rgchapter_views.awards),
     url(r'^awards/(?P<award_id>\d+)/$', rgchapter_views.awardsdesc),
     url(r'^my/$', rgchapter_views.redirtomy),
