@@ -9,7 +9,7 @@ html {
   height: 100%; }
 
 body {
-  font-family: 'Merriweather', 'Helvetica Neue', Arial, sans-serif; }
+  font-family: 'Open Sans', 'Helvetica Neue', Arial, sans-serif; }
 
 hr {
   max-width: 50px;
@@ -26,14 +26,6 @@ a {
   transition: all 0.2s; }
   a:focus, a:hover {
     color: #f05f40; }
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: 'Open Sans', 'Helvetica Neue', Arial, sans-serif; }
 
 p {
   font-size: 16px;
@@ -146,13 +138,7 @@ header.masthead {
   width: 100%;
   min-height: auto;
   text-align: center;
-  color: white;
-  background-image: url("../img/header.jpg");
-  background-position: center;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-  background-size: cover; }
+  color: white; }
   header.masthead .header-content {
     position: relative;
     width: 100%;
@@ -342,3 +328,24 @@ header.masthead {
 
 .btn-xl {
   padding: 15px 30px; }
+
+/* Portfolio */
+
+.portfolio {
+    padding: 50px 0;
+}
+
+.portfolio-item {
+    margin-bottom: 30px;
+}
+
+.img-portfolio {
+    margin: 0 auto;
+    border-radius: 360px;
+    width: 228px;
+    height: 228px;
+}
+
+.img-portfolio:hover {
+    opacity: 100;
+}
