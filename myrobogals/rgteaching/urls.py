@@ -18,7 +18,7 @@ urlpatterns = [
     url(r'^(?P<visit_id>\d+)/cancel/$', eventvisit.cancelvisit),
     url(r'^(?P<visit_id>\d+)/reopen/$', eventvisit.reopenvisit),
     url(r'^(?P<event_id>\d+)/rsvp/(?P<user_id>\d+)/(?P<rsvp_type>.+)/$', eventvisit.dorsvp),
-    url(r'^(?P<event_id>\d+)/comment', eventvisit.visitcomment, name='visit_comment'),
+    url(r'^(?P<visit_id>\d+)/comment', eventvisit.visitcomment, name='visit_comment'),
     url(r'^(?P<school_id>\d+)/newvisit/$', eventvisit.newvisitwithschool),
     url(r'^new/$', eventvisit.newvisit),
 

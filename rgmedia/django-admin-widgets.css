@@ -58,10 +58,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     background-color: #EFEFEF;
 }
 
-#.selector h2 {
-#    background: white url(../img/admin/nav-bg.gif) bottom left repeat-x;
-#    color: #666;
-#}
+.selector h2 {
+    color: #666;
+}
 
 .selector .selector-filter {
     background: white;

@@ -45,24 +45,25 @@ def teachhome(request):
         setattr(chapter, 'sum_percent', 'width:' + str(chapter.sum / chapter.goal * 100) + '%')
         context_instance['chapter'] = chapter
 
-        # Small list of upcoming workshops
-        upcoming_events = SchoolVisit.objects.filter(chapter=chapter, status=0).order_by('visit_start')
-        context_instance['upcoming_events'] = upcoming_events[:5]
+        # Get list of all currently opened events
+        opened_events = SchoolVisit.objects.filter(chapter=chapter, status=0).order_by('visit_start')
 
-        for e in upcoming_events:
+        # Append attending information to the event
+        for e in opened_events:
             setattr(e, 'attending', EventAttendee.objects.filter(event=e, rsvp_status=2).count())
 
-        print(upcoming_events)
-
-        past_events = upcoming_events.filter(visit_end__gt=datetime.datetime.now(tz=chapter.tz_obj()))
-        context_instance['past_events'] = past_events
+        # Filtering based on dates
+        context_instance['upcoming_events'] = opened_events.filter(visit_end__gt=datetime.datetime.now(tz=chapter.tz_obj()))[:5]
+        context_instance['past_events'] = opened_events.filter(visit_end__lt=datetime.datetime.now(tz=chapter.tz_obj())).order_by('-visit_start')
 
         # Small list of Recently finished workshops
-        closed_events = SchoolVisit.objects.filter(chapter=chapter, status=1).order_by('visit_start')[:5]
-        context_instance['closed_events'] = closed_events
+        closed_events = SchoolVisit.objects.filter(chapter=chapter, status=1).order_by('-visit_start')[:5]
 
+        # Append attended information to the events
         for e in closed_events:
-            setattr(e, 'attended', EventAttendee.objects.filter(event=e, actual_status=2).count())
+            setattr(e, 'attended', EventAttendee.objects.filter(event=e, actual_status=1).count())
+
+        context_instance['closed_events'] = closed_events
 
         # New events form for modal
         e = new_event(request)
@@ -95,11 +96,10 @@ def new_event(request):
             v.created_method = 0    # Not necessary
             v.date_modified = make_aware(datetime.datetime.now(), timezone=chapter.tz_obj())  # Check
 
-            visit_date = form['date']
             # Take the user's date and time input and combine it with the
             # chapter's timezone to create a timezone-aware datetime.
-            v.visit_start = make_aware(datetime.datetime.combine(visit_date, form['start_time']), timezone=chapter.tz_obj())
-            v.visit_end = make_aware(datetime.datetime.combine(visit_date, form['end_time']), timezone=chapter.tz_obj())
+            v.visit_start = make_aware(datetime.datetime.combine(form['date'], form['start_time']), timezone=chapter.tz_obj())
+            v.visit_end = make_aware(datetime.datetime.combine(form['date'], form['end_time']), timezone=chapter.tz_obj())
 
             v.yearlvl = form['yearlvl']
 
@@ -135,6 +135,9 @@ def viewvisit(request, visit_id):
         chapter_filter = None
     else:
         chapter_filter = chapter
+
+    rsvpform = RSVPForm()
+    rsvp_messages = EventMessage.objects.filter(event__id=visit_id)
 
     # The event has been edited
     if request.method == 'POST':
@@ -195,25 +198,24 @@ def viewvisit(request, visit_id):
                               {'chapter': chapter, 'v': v, 'stats': stats, 'attended': attended, 'attending': attending,
                                'notattending': notattending, 'waitingreply': waitingreply,
                                'user_rsvp_status': user_rsvp_status, 'user_attended': user_attended,
-                               'eventmessages': eventmessages, 'event_form': event_form,
-                               'id': v.id}, context_instance=RequestContext(request))
+                               'eventmessages': eventmessages, 'event_form': event_form, 'rsvp_form': rsvpform,
+                               'rsvp_messages': rsvp_messages, 'id': v.id}, context_instance=RequestContext(request))
 
 
 @login_required
-def visitcomment(request, event_id):
+def visitcomment(request, visit_id):
     if request.method == 'POST':
         rsvpform = RSVPForm(request.POST)
         if rsvpform.is_valid():
             data = rsvpform.cleaned_data
-            if data['message']:
-                rsvpmessage = EventMessage()
-                rsvpmessage.event = event_id
-                rsvpmessage.user = request.user
-                rsvpmessage.date = now()
-                rsvpmessage.message = data['message']
-                rsvpmessage.save()
+            rsvpmessage = EventMessage()
+            rsvpmessage.event = SchoolVisit.objects.get(id=visit_id)
+            rsvpmessage.user = request.user
+            rsvpmessage.date = now()
+            rsvpmessage.message = data['message']
+            rsvpmessage.save()
 
-            return HttpResponseRedirect(reverse('teaching:viewvisit'), kwargs={'event_id': event_id})
+    return HttpResponseRedirect(reverse('teaching:viewvisit', kwargs={'visit_id': visit_id}))
 
 
 @login_required
@@ -730,20 +732,25 @@ def stats(request, visit_id):
             stats = SchoolVisitStats()
             stats.visit = v
             stats.visit_type = data['visit_type']
-            stats.primary_girls_first = data['primary_girls_first']
-            stats.primary_girls_repeat = data['primary_girls_repeat']
-            stats.primary_boys_first = data['primary_boys_first']
-            stats.primary_boys_repeat = data['primary_boys_repeat']
-            stats.high_girls_first = data['high_girls_first']
-            stats.high_girls_repeat = data['high_girls_repeat']
-            stats.high_boys_first = data['high_boys_first']
-            stats.high_boys_repeat = data['high_boys_repeat']
-            stats.other_girls_first = data['other_girls_first']
-            stats.other_girls_repeat = data['other_girls_repeat']
-            stats.other_boys_first = data['other_boys_first']
-            stats.other_boys_repeat = data['other_boys_repeat']
-            stats.notes = data['notes']
+
+            if int(v.yearlvl) <= 6:
+                # Primary School
+                stats.primary_girls_first = data['other_girls_first']
+                stats.primary_boys_first = data['other_boys_first']
+            elif int(v.yearlvl) <= 12:
+                # High School
+                stats.secondary_girls_first = data['other_girls_first']
+                stats.secondary_boys_first = data['other_boys_first']
+            else:
+                # Everything else
+                stats.other_girls_first = data['other_girls_first']
+                stats.other_boys_first = data['other_boys_first']
+
             stats.save()
+
+            v.numstudents = data['other_girls_first'] + data['other_boys_first']
+            v.save()
+
             # Save attendance in database
             for attendee in data['attended']:
                 list = EventAttendee.objects.filter(event__id=v.id).values_list('user_id', flat=True)

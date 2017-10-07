@@ -24,31 +24,31 @@
       {% else %}
         {% ifequal user_rsvp_status 1 %}
           {% trans "You have been invited to this event but have not yet RSVP'd. Your RSVP:" %} <a
-              href="/teaching/{{ v.pk }}/rsvp/{{ user.pk }}/yes/">{% trans "attending" %}</a> | <a href="/teaching/{{ v.pk }}/rsvp/{{ user.pk }}/no/">{% trans "not attending" %}</a>
+            href="/teaching/{{ v.pk }}/rsvp/{{ user.pk }}/yes/">{% trans "attending" %}</a> | <a href="/teaching/{{ v.pk }}/rsvp/{{ user.pk }}/no/">{% trans "not attending" %}</a>
         {% else %}
           {% ifequal user_rsvp_status 2 %}
             {% trans "Your RSVP status is" %} <strong>{% trans "attending" %}</strong>. <a
-                href="/teaching/{{ v.pk }}/rsvp/{{ user.pk }}/no/">{% trans "Change to not attending" %}</a>
+              href="/teaching/{{ v.pk }}/rsvp/{{ user.pk }}/no/">{% trans "Change to not attending" %}</a>
           {% else %}
             {% ifequal user_rsvp_status 4 %}
               {% trans "Your RSVP status is" %} <strong> {% trans "not attending" %}</strong>. <a
-                  href="/teaching/{{ v.pk }}/rsvp/{{ user.pk }}/yes/">{% trans "Change to attending" %}</a>
+                href="/teaching/{{ v.pk }}/rsvp/{{ user.pk }}/yes/">{% trans "Change to attending" %}</a>
             {% endifequal %}
           {% endifequal %}
         {% endifequal %}
       {% endifequal %}
     </div>
   {% else %}
-    <div class="tile">
+    <div class="alert alert-info" role="alert">
       {% ifequal v.status 1 %}
         {% if user_attended %}
-          <p class="attend-yes">{% trans "This event is over. You attended this event." %}</p>
+          {% trans "This event is over, thanks for attending!" %}
         {% else %}
-          <p class="attend-unconf">{% trans "This event is over." %}</p>
+          {% trans "This event is over" %}
         {% endif %}
       {% else %}
         {% ifequal v.status 2 %}
-          <p class="attend-no">{% trans "This event has been cancelled" %}</p>
+          {% trans "This event has been cancelled" %}
         {% endifequal %}
       {% endifequal %}
     </div>
@@ -76,7 +76,7 @@
     <div class="col-xs-12 col-md-6">
       <div class="tile">
         <h2 class="rg-page-header">
-          {% trans "See All" %}
+          {% trans "Attendees" %}
           <button type="button" style="float:right; margin-top:-3px;" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#exampleModal1">
             <i class="fa fa-list" aria-hidden="true"></i> {% trans "See All" %}
           </button>
@@ -84,12 +84,20 @@
 
         <table class="dashboard-table" align="center">
           <tr>
-            <td class="dashboard-data"><b>10</b></td>
-            <td class="dashboard-data"><b>3</b></td>
-            <td class="dashboard-data"><b>5</b></td>
+            {% if v.status %}
+              <td class="dashboard-data"><b>{{ attended.count }}</b></td>
+            {% else %}
+              <td class="dashboard-data"><b>{{ attending.count }}</b></td>
+            {% endif %}
+            <td class="dashboard-data"><b>{{ notattending.count }}</b></td>
+            <td class="dashboard-data"><b>{{ waitingreply.count }}</b></td>
           </tr>
           <tr>
-            <td class="dashboard-footer">ATTENDING</td>
+            {% if v.status %}
+              <td class="dashboard-footer">ATTENDED</td>
+            {% else %}
+              <td class="dashboard-footer">ATTENDING</td>
+            {% endif %}
             <td class="dashboard-footer">INTERESTED</td>
             <td class="dashboard-footer">NOT GOING</td>
           </tr>
@@ -170,43 +178,32 @@
       </button>
     </h2>
 
-    <div class="row" style="margin-top: 14px;">
-      <div class="col-2" style="display: flex; align-items: center; justify-content: center">
-        <img style="border-radius: 360px; height: 3rem;" src="{% static "myrobogals/img/profile_picture.png" %}"/>
+    {% if rsvp_messages.count %}
+      {% for message in rsvp_messages %}
+        <div class="row" style="margin-top: 14px;">
+          <div class="col-2" style="display: flex; align-items: center; justify-content: center">
+            <img style="border-radius: 360px; height: 3rem;" src="{% static "myrobogals/img/profile_picture.png" %}"/>
+          </div>
+          <div class="col-10">
+            <strong style="color: #5876D0">{{ message.user.get_full_name }}</strong>
+            <br/>
+            {{ message.message }}
+          </div>
+        </div>
+        <hr/>
+      {% endfor %}
+    {% else %}
+      <div class="row" style="height: 50px;">
+        <div class="col-12" style="color: #90949c; text-align: center; line-height: 35px; font-size: 16px;">
+          <b>No comments</b>
+        </div>
       </div>
-      <div class="col-10">
-        <strong style="color: #5876D0">Mark Jacobs</strong>
-        <br/>
-        This is going to be an exciting workshop!
-      </div>
-    </div>
-    <hr/>
-    <div class="row" style="margin-top: 14px;">
-      <div class="col-2" style="display: flex; align-items: center; justify-content: center">
-        <img style="border-radius: 360px; height: 3rem;" src="{% static "myrobogals/img/profile_picture.png" %}"/>
-      </div>
-      <div class="col-10">
-        <strong style="color: #5876D0">Jennifer Yang</strong>
-        <br/>
-        +1 <strong style="color: #5876D0">Mark Jacobs</strong>
-      </div>
-    </div>
-    <hr/>
-    <div class="row" style="margin-top: 14px;">
-      <div class="col-2" style="display: flex; align-items: center; justify-content: center">
-        <img style="border-radius: 360px; height: 3rem;" src="{% static "myrobogals/img/profile_picture.png" %}"/>
-      </div>
-      <div class="col-10">
-        <strong style="color: #5876D0">Jessie Pinkman</strong>
-        <br/>
-        Hi all, I can give lifts to the workshop from uni. Just shoot me a message if you need a lift!
-      </div>
-    </div>
-    <hr/>
+
+    {% endif %}
   </div>
 
   <!-- Create new event modal -->
-  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labeslledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">

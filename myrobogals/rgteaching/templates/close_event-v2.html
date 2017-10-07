@@ -3,6 +3,14 @@
 {% load widget_tweaks %}
 {% load static %}
 
+{% block header %}
+    <link rel="stylesheet" href="{{ MEDIA_URL }}django-admin-widgets.css" type="text/css" />
+  <!-- TODO: Scripts needs cleaning up -->
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/django-admin.multiselect.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/core.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/SelectBox.js"></script>
+{% endblock %}
+
 {% block title %}Close Event{% endblock %}
 
 {% block pagetitle %} Close {{ visit_id }}{% endblock %}
@@ -35,7 +43,7 @@
       </div>
 
       <div class="form-group row">
-        <label class="form-control-label col-2">Attendees</label>
+        <label class="form-control-label col-2">Attended</label>
         <div class="col-5">
           {{ form.attended }}
         </div>

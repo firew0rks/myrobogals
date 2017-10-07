@@ -19,9 +19,9 @@ body { min-width:982px;}
 .x-c-s .col1 { margin-left:0px;}
 .x-c-s .col3 { left:0px;width:0px;}
 
-.selector-add {
-    background: url({{ MEDIA_URL }}images/selector-add.gif) top center no-repeat;
-}
-.selector-remove {
-    background: url({{ MEDIA_URL }}images/selector-remove.gif) top center no-repeat;
-}
+/*.selector-add {*/
+    /*background: url({{ MEDIA_URL }}images/selector-add.gif) top center no-repeat;*/
+/*}*/
+/*.selector-remove {*/
+    /*background: url({{ MEDIA_URL }}images/selector-remove.gif) top center no-repeat;*/
+/*}*/

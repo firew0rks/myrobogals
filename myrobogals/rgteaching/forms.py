@@ -15,6 +15,18 @@ from myrobogals.rgteaching.models import (VISIT_TYPES_BASE, VISIT_TYPES_REPORT,
                                           EventAttendee, School, Event)
 
 
+def _clean_start_time(self):
+    data = self.cleaned_data['start_time']
+    dt = datetime.datetime.strptime(data, '%I:%M %p')
+    return dt.time()
+
+
+def _clean_end_time(self):
+    data = self.cleaned_data['end_time']
+    dt = datetime.datetime.strptime(data, '%I:%M %p')
+    return dt.time()
+
+
 class NewEventForm(forms.Form):
     """
     v2 Modal New Event Form
@@ -38,14 +50,10 @@ class NewEventForm(forms.Form):
             self.fields["event"].queryset = School.objects.filter(chapter=chapter).order_by('name')
 
     def clean_start_time(self):
-        data = self.cleaned_data['start_time']
-        dt = datetime.datetime.strptime(data, '%I:%M %p')
-        return dt.time()
+        return _clean_start_time(self)
 
     def clean_end_time(self):
-        data = self.cleaned_data['end_time']
-        dt = datetime.datetime.strptime(data, '%I:%M %p')
-        return dt.time()
+        return _clean_end_time(self)
 
 
 # TODO: duplicate of SchoolVisitFormTwo & SchoolVisitFormThree, requires refactoring of code
@@ -73,16 +81,14 @@ class NewEventFormAdditionFields(forms.Form):
 
 
 class RSVPForm(forms.Form):
-    message = forms.CharField(label=_("Comment"), widget=forms.Textarea)
+    message = forms.CharField(label="", widget=forms.Textarea(attrs={'cols': '30', 'rows': '2', 'class': 'form-control'}))
 
 
 # Base class for SchoolVisitForm
 class SchoolVisitFormOneBase(forms.Form):
     school = forms.ModelChoiceField(queryset=School.objects.none(), help_text=_(
         'If the school is not listed here, it first needs to be added in Workshops > Add School'))
-    date = forms.DateField(label=_('School visit date'),
-                           widget=SelectDateWidget(years=range(2008, datetime.date.today().year + 3)),
-                           initial=timezone.now().date())
+    date = forms.DateField(label=_('Date'))
     start_time = forms.TimeField(label=_('Start time'), initial='10:00:00')
     end_time = forms.TimeField(label=_('End time'), initial='13:00:00')
     location = forms.CharField(label=_("Location"), help_text=_("Where the workshop takes place, at the school or elsewhere"))
@@ -126,6 +132,9 @@ class SchoolVisitFormOne(SchoolVisitFormOneBase):
 
 # Form to create or edit a InstantSchoolVisit (instant workshop)
 class SchoolVisitFormInstant(SchoolVisitFormOneBase):
+    start_time = forms.CharField(label=_('Start Time'), initial='10:00:00')
+    end_time = forms.CharField(label=_('End Time'), initial='13:00:00')
+    yearlvl = forms.CharField(label=_("Year level"), required=False)
     school = forms.ChoiceField(choices=[(school.id, school) for school in School.objects.all()],
                                widget=forms.Select(attrs={'onchange': 'NewSchoolSelect();'}))
 
@@ -140,6 +149,12 @@ class SchoolVisitFormInstant(SchoolVisitFormOneBase):
 
         query_set_tuple = [(q, q) for q in school_query_set]
         self.fields['school'].choices = query_set_tuple + [('-1', '--------------'), ('0', 'New School')]
+
+    def clean_start_time(self):
+        return _clean_start_time(self)
+
+    def clean_end_time(self):
+        return _clean_end_time(self)
 
 
 class SchoolVisitFormTwo(forms.Form):
@@ -311,14 +326,14 @@ class SchoolFormPartOne(forms.Form):
         else:
             self.fields['address_country'].initial = 'AU'
 
-    name = SchoolNameField(max_length=128, label=_("Name"), required=True, widget=forms.TextInput(attrs={'size': '30'}))
-    address_street = forms.CharField(label=_("Street"), required=False, widget=forms.TextInput(attrs={'size': '30'}))
-    address_city = forms.CharField(label=_("City"), required=False, widget=forms.TextInput(attrs={'size': '30'}))
-    address_state = forms.CharField(label=_("State"), required=True, widget=forms.TextInput(attrs={'size': '30'}),
+    name = SchoolNameField(max_length=128, label=_("School's Name"), required=True, widget=forms.TextInput(attrs={'size': '30'}))
+    address_street = forms.CharField(label=_("School's Address"), required=False, widget=forms.TextInput(attrs={'size': '30'}))
+    address_city = forms.CharField(label=_("School's City"), required=False, widget=forms.TextInput(attrs={'size': '30'}))
+    address_state = forms.CharField(label=_("School's State"), required=True, widget=forms.TextInput(attrs={'size': '30'}),
                                     help_text="Use the abbreviation, e.g. 'VIC' not 'Victoria'")
-    address_postcode = forms.CharField(label=_("Postcode"), required=False,
+    address_postcode = forms.CharField(label=_("School's Postcode"), required=False,
                                        widget=forms.TextInput(attrs={'size': '30'}))
-    address_country = forms.ModelChoiceField(label=_("Country"), queryset=Country.objects.all(), initial='AU')
+    address_country = forms.ModelChoiceField(label=_("School's Country"), queryset=Country.objects.all(), initial='AU')
 
 
 class SchoolFormPartTwo(forms.Form):

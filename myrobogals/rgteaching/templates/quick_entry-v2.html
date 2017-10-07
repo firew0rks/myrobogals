@@ -2,19 +2,25 @@
 {% load i18n %}
 {% load widget_tweaks %}
 
+{% block header %}
+  <link rel="stylesheet" href="{{ MEDIA_URL }}django-admin-widgets.css" type="text/css"/>
+  <!-- TODO: Scripts needs cleaning up -->
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/django-admin.multiselect.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/core.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}js/SelectBox.js"></script>
+{% endblock %}
+
 {% block title %}{% trans "Enter Stats" %}{% endblock %}
 
 {% block pagetitle %}{% trans "Enter Stats" %}{% endblock %}
 
 {% block content %}
-
-
   <div class="tile">
     <h2 class="rg-page-header">
-      Basic Information
+      Quick Entry
     </h2>
 
-    <form action="{% url 'teaching:home' %}" method="post"> {% csrf_token %}
+    <form action="{% url 'teaching:quickentry' %}" method="post"> {% csrf_token %}
       <div class="form-group row" style="justify-content: flex-end; margin-right: 0;">
         {{ form2.visit_type|add_class:"custom-select"|attr:"style:font-weight:bold;" }}
       </div>
@@ -22,12 +28,12 @@
       <div class="form-group row">
         <label for="recipient-name" class="form-control-label col-2">Event</label>
         <div class="col-10">
-          {% if not event_form.event.errors %}
-            {{ event_form.event|add_class:"form-control typeahead"|attr:"placeholder:Enter the school or event's name"|attr:"autocomplete:off" }}
+          {% if not event_form.school.errors %}
+            {{ form1.school|add_class:"form-control typeahead"|attr:"placeholder:Enter the school or event's name"|attr:"autocomplete:off" }}
           {% else %}
-            {{ event_form.event|add_class:"form-control is-invalid"|attr:"placeholder:Enter the school or event's name data-provide:typeahead" }}
+            {{ form1.school|add_class:"form-control is-invalid"|attr:"placeholder:Enter the school or event's name data-provide:typeahead" }}
             <div class="invalid-feedback">
-              {% for error in event_form.event.errors %}
+              {% for error in form1.school.errors %}
                 {{ error }}
               {% endfor %}
             </div>
@@ -35,15 +41,37 @@
         </div>
       </div>
 
+      <div id="newSchoolTable">
+        <hr style="margin-top: 2rem; margin-bottom: 2rem;"/>
+        {% for field in schoolform %}
+          <div class="form-group row">
+            <label for="recipient-name" class="form-control-label col-2">{{ field.label_tag }}</label>
+            <div class="col-10">
+              {% if not field.errors %}
+                {{ field|add_class:"form-control" }}
+              {% else %}
+                {{ field|add_class:"form-control is-invalid" }}
+                <div class="invalid-feedback">
+                  {% for error in field.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+        <hr style="margin-top: 2rem; margin-bottom: 2rem;"/>
+      </div>
+
       <div class="form-group row">
         <label for="recipient-name" class="form-control-label col-2">Location</label>
         <div class="col-10">
-          {% if not event_form.location.errors %}
-            {{ event_form.location|add_class:"form-control"|attr:"The location where the event is being held" }}
+          {% if not form1.location.errors %}
+            {{ form1.location|add_class:"form-control"|attr:"The location where the event is being held" }}
           {% else %}
-            {{ event_form.location|add_class:"form-control is-invalid"|attr:"The location where the event is being held" }}
+            {{ form1.location|add_class:"form-control is-invalid"|attr:"The location where the event is being held" }}
             <div class="invalid-feedback">
-              {% for error in event_form.location.errors %}
+              {% for error in form1.location.errors %}
                 {{ error }}
               {% endfor %}
             </div>
@@ -53,22 +81,22 @@
 
       <div class="form-group row">
         <label for="recipient-name" class="form-control-label col-2">Date</label>
-        {% if not event_form.date.errors %}
+        {% if not form1.date.errors %}
           <div class="input-group date col-5" data-provide="datepicker">
-            {{ event_form.date|add_class:"form-control" }}
+            {{ form1.date|add_class:"form-control" }}
             <div class="input-group-addon">
               <i class="fa fa-calendar" aria-hidden="true"></i>
             </div>
           </div>
         {% else %}
           <div class="input-group date col-5" data-provide="datepicker">
-            {{ event_form.date|add_class:"form-control is-invalid" }}
+            {{ form1.date|add_class:"form-control is-invalid" }}
             <div class="input-group-addon">
               <i class="fa fa-calendar" aria-hidden="true"></i>
             </div>
           </div>
           <div class="invalid-feedback" style="display: block;">
-            {% for error in event_form.date.errors %}
+            {% for error in form1.date.errors %}
               {{ error }}
             {% endfor %}
           </div>
@@ -78,28 +106,28 @@
       <div class="form-group row">
         <label for="recipient-name" class="form-control-label col-2">Time</label>
         <div class="input-group bootstrap-timepicker timepicker col-5">
-          {% if not event_form.start_time.errors %}
-            {{ event_form.start_time|add_class:"form-control input-small"|attr:"id:timepicker1" }}
+          {% if not form1.start_time.errors %}
+            {{ form1.start_time|add_class:"form-control input-small"|attr:"id:timepicker1" }}
             <span class="input-group-addon"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
           {% else %}
-            {{ event_form.start_time|add_class:"form-control input-small is-invalid"|attr:"id:timepicker1" }}
+            {{ form1.start_time|add_class:"form-control input-small is-invalid"|attr:"id:timepicker1" }}
             <span class="input-group-addon"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
             <div class="invalid-feedback">
-              {% for error in event_form.start_time.errors %}
+              {% for error in form1.start_time.errors %}
                 {{ error }}
               {% endfor %}
             </div>
           {% endif %}
         </div>
         <div class="input-group bootstrap-timepicker timepicker col-5">
-          {% if not event_form.end_time.errors %}
-            {{ event_form.end_time|add_class:"form-control input-small"|attr:"id:timepicker2" }}
+          {% if not form1.end_time.errors %}
+            {{ form1.end_time|add_class:"form-control input-small"|attr:"id:timepicker2" }}
             <span class="input-group-addon"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
           {% else %}
-            {{ event_form.end_time|add_class:"form-control input-small is-invalid"|attr:"id:timepicker2" }}
+            {{ form1.end_time|add_class:"form-control input-small is-invalid"|attr:"id:timepicker2" }}
             <span class="input-group-addon"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
             <div class="invalid-feedback">
-              {% for error in event_form.end_time.errors %}
+              {% for error in form1.end_time.errors %}
                 {{ error }}
               {% endfor %}
             </div>
@@ -110,48 +138,34 @@
       <div class="form-group row">
         <label for="message-text" class="form-control-label col-2">Year Level:</label>
         <div class="col-10">
-          {{ event_form.yearlvl|add_class:"form-control" }}
+          {{ form1.yearlvl|add_class:"form-control" }}
         </div>
       </div>
 
       <div class="form-group row">
         <label for="message-text" class="form-control-label col-2">Number of Girls</label>
         <div class="col-2">
-          {{ event_form.yearlvl|add_class:"form-control" }}
+          {{ form2.other_girls_first|add_class:"form-control" }}
         </div>
       </div>
 
       <div class="form-group row">
         <label for="message-text" class="form-control-label col-2">Number of Boys</label>
         <div class="col-2">
-          {{ event_form.yearlvl|add_class:"form-control" }}
+          {{ form2.other_boys_first|add_class:"form-control" }}
         </div>
       </div>
 
-      <div class="row">
-        <label class="col-2">Selected Attended:</label>
-        <div class="form-group col-5">
-          <select multiple class="form-control" id="exampleSelect2">
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-            <option>5</option>
-          </select>
-        </div>
-
-        <div class="form-group col-5">
-          <select multiple class="form-control" id="exampleSelect2">
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-            <option>5</option>
-          </select>
+      <div class="form-group row">
+        <label for="message-text" class="form-control-label col-2">Attended</label>
+        <div class="col-10">
+          {{ form2.attended }}
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary">Save Stats</button>
+      <div class="form-group">
+        <button type="submit" class="btn btn-primary">Save Stats</button>
+      </div>
 
     </form>
   </div>
@@ -173,5 +187,25 @@
               down: 'fa fa-chevron-down'
           }
       });
+  </script>
+
+  <script>
+      // Run script when page loads initially
+      NewSchoolSelect();
+
+      // Shows the new school filling in form options
+      function NewSchoolSelect() {
+          var e = document.getElementById("id_school");
+          var newSchool = document.getElementById("newSchoolTable");
+          var selected = e.value;
+
+          if (selected == 0) {
+              newSchool.style.visibility = "visible";
+              newSchool.style.display = "inline";
+          } else {
+              newSchool.style.visibility = "collapse";
+              newSchool.style.display = "none";
+          }
+      }
   </script>
 {% endblock %}

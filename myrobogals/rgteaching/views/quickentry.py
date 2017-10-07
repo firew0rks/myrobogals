@@ -73,6 +73,7 @@ def instantvisit(request):
                     school_visit.school = new_school
                 else:
                     # School form invalid
+                    messages.error(request, "School form invalid")
                     return render_to_response('instant_workshop.html',
                                               {'form1': formpart1, 'form2': formpart2, 'schoolform': form_school},
                                               context_instance=RequestContext(request))
@@ -136,6 +137,10 @@ def instantvisit(request):
 
         # Form is invalid
         else:
+            print(formpart1)
+            print(formpart2)
+            print(form_school)
+            messages.error(request, "Form is invalid")
             return render_to_response('instant_workshop.html',
                                       {'form1': formpart1, 'form2': formpart2, 'schoolform': form_school},
                                       context_instance=RequestContext(request))
